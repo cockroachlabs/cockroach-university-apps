@@ -27,10 +27,10 @@ jobs:
       - name: Extract clean tag name
         id: vars
         run: |
-          RAW_TAG=${GITHUB_REF##*/}
+          RAW_TAG=${{ github.event.inputs.version }}
           CLEAN_TAG=${RAW_TAG#migration-}
+          echo "RAW_TAG=$RAW_TAG" >> $GITHUB_ENV
           echo "CLEAN_TAG=$CLEAN_TAG" >> $GITHUB_ENV
-  
 
       - name: Build Linux amd64 binary
         run: |
@@ -45,6 +45,7 @@ jobs:
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ env.RAW_TAG }}
           files: |
             migration-mysql-app/migration-mysql-app-linux-amd64-${{ env.CLEAN_TAG }}
             migration-mysql-app/migration-mysql-app-darwin-arm64-${{ env.CLEAN_TAG }}
