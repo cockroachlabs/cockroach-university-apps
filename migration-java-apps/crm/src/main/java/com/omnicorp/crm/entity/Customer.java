@@ -7,8 +7,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import java.math.BigInteger;
-
 @Entity
 @Table(name = "customers")
 public class Customer {

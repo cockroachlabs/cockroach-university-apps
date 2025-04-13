@@ -142,7 +142,6 @@ class CrmApplicationTests {
 		// Simulate a concurrent read (not really concurrent in a unit test)
 		Customer originalCustomer = crmService.getCustomerById(1L);
 		assertNotNull(originalCustomer);
-		String originalAddress = originalCustomer.getAddress();
 
 		// Modify the customer within the transaction
 		Customer customerToUpdate = crmService.getCustomerById(1L);
