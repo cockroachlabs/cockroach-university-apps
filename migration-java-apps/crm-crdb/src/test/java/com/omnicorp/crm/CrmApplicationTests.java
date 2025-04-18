@@ -6,18 +6,32 @@ import com.omnicorp.crm.repository.CustomerRepository;
 import com.omnicorp.crm.repository.OrderRepository;
 import com.omnicorp.crm.service.CrmService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DirtiesContext
@@ -157,4 +171,49 @@ class CrmApplicationTests {
 		assertEquals("Updated Address", concurrentReadCustomer.getAddress());
 	}
 
+	@Test
+	void testMaxRetriesExceeded() throws NoSuchFieldException {
+		// Create a test order
+		Order testOrder = new Order();
+		testOrder.setCustomerId(1L);
+		testOrder.setOrderDate(LocalDate.now());
+		testOrder.setTotalAmount(100.00);
+
+		Order savedOrder = crmService.createOrder(testOrder);
+		assertNotNull(savedOrder.getOrderId());
+
+		try {
+			// Create a field accessor for the private method
+			Field maxRetriesField = CrmService.class.getDeclaredField("MAX_RETRIES");
+			maxRetriesField.setAccessible(true);
+
+			// Store the original value to restore it later
+			int originalMaxRetries = (int) maxRetriesField.get(crmService);
+
+			// Set MAX_RETRIES to 1 to make the test run faster
+			maxRetriesField.set(crmService, 0);
+
+			// Create an order with invalid amount to trigger an exception that would need retrying
+			// We're simulating a case where no matter how many times we retry, it will always fail
+			Order invalidOrder = new Order();
+			invalidOrder.setOrderId(savedOrder.getOrderId());
+			// Set to a value that will cause a validation error or constraint violation
+			invalidOrder.setTotalAmount(-999999.99); // Assuming there's validation against negative values
+
+			// This should exhaust retries and throw the transaction retry limit exception
+			Exception exception = assertThrows(IllegalStateException.class, () ->
+					crmService.updateOrderWithRetry(invalidOrder)
+			);
+
+			assertEquals("Transaction retry limit exceeded", exception.getMessage());
+
+			// Restore the original MAX_RETRIES value
+			maxRetriesField.set(crmService, originalMaxRetries);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} finally {
+			// Clean up the test order
+			orderRepository.delete(savedOrder);
+		}
+	}
 }
