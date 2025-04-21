@@ -1,7 +1,3 @@
-CREATE DATABASE omnicorp;
-
-\c omnicorp
-
 CREATE TABLE customers (
     customer_uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id INT8 NOT NULL,

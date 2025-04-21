@@ -1,3 +1,4 @@
+-- Copy Data
 INSERT INTO omnicorp.customers (customer_id, first_name, last_name, email, phone, address, customer_uuid)
 SELECT customer_id, first_name, last_name, email, phone, address, gen_random_uuid()
 FROM crm.customers;

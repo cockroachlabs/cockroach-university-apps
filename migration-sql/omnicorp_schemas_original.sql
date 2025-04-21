@@ -1,7 +1,3 @@
-CREATE DATABASE omnicorp;
-
-\c omnicorp
-
 CREATE SEQUENCE customers_seq;
 
 CREATE SEQUENCE orders_seq;
