@@ -17,7 +17,7 @@ CREATE TABLE orders (
     customer_uuid UUID NULL REFERENCES customers (customer_uuid),
     order_date DATE NULL,
     total_amount DECIMAL(10,2) NULL,
-    CONSTRAINT orders_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES customers(customer_id), -- Retaining the old foreign key
+    CONSTRAINT orders_customer_uuid_fkey FOREIGN KEY (customer_uuid) REFERENCES customers(customer_uuid), 
     UNIQUE INDEX orders_order_id_key (order_id ASC) -- Retaining uniqueness on the old ID
 );
 
@@ -37,7 +37,7 @@ CREATE TABLE inventory (
     product_uuid UUID NULL REFERENCES products (product_uuid),
     quantity INT8 NULL,
     location VARCHAR(255) NULL,
-    CONSTRAINT inventory_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(product_id), -- Retaining the old foreign key
+    CONSTRAINT inventory_product_uuid_fkey FOREIGN KEY (product_uuid) REFERENCES products(product_uuid), 
     UNIQUE INDEX inventory_inventory_id_key (inventory_id ASC) -- Retaining uniqueness on the old ID
 );
 
@@ -50,6 +50,6 @@ CREATE TABLE shipments (
     product_uuid UUID NULL REFERENCES products (product_uuid),
     quantity INT8 NULL,
     shipment_date DATE NULL,
-    CONSTRAINT shipments_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(product_id), -- Retaining the old foreign key
+    CONSTRAINT shipments_product_uuid_fkey FOREIGN KEY (product_uuid) REFERENCES products(product_uuid), -- Retaining the old foreign key
     UNIQUE INDEX shipments_shipment_id_key (shipment_id ASC) -- Retaining uniqueness on the old ID
 );
