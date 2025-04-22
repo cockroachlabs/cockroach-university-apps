@@ -4,15 +4,18 @@ import com.omnicorp.crm.entity.Customer;
 import com.omnicorp.crm.entity.Order;
 import com.omnicorp.crm.repository.CustomerRepository;
 import com.omnicorp.crm.repository.OrderRepository;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CrmService {
@@ -30,7 +33,7 @@ public class CrmService {
 		return customerRepository.findAll();
 	}
 
-	public Customer getCustomerById(Long id) {
+	public Customer getCustomerById(UUID id) {
 		return customerRepository.findById(id).orElse(null);
 	}
 
@@ -42,7 +45,7 @@ public class CrmService {
 		return orderRepository.findAll();
 	}
 
-	public Order getOrderById(Long id) {
+	public Order getOrderById(UUID id) {
 		return orderRepository.findById(id).orElse(null);
 	}
 
@@ -50,25 +53,48 @@ public class CrmService {
 		return orderRepository.save(order);
 	}
 
-	public Customer getCustomerByIdInNewTransaction(Long id) {
+	// Added
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public Customer getCustomerByIdInNewTransaction(UUID id) {
 		return customerRepository.findById(id).orElse(null);
+	}
+
+	// With Spring Retry
+	@Transactional
+	@Retryable(value = DataAccessException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
+	public Customer updateCustomer(UUID uuid, Customer updatedCustomer) {
+		Optional<Customer> existingCustomerOptional = customerRepository.findById(uuid);
+		if (existingCustomerOptional.isPresent()) {
+			Customer existingCustomer = existingCustomerOptional.get();
+			// Update fields as needed
+			existingCustomer.setFirstName(updatedCustomer.getFirstName());
+			existingCustomer.setLastName(updatedCustomer.getLastName());
+			existingCustomer.setEmail(updatedCustomer.getEmail());
+			existingCustomer.setPhone(updatedCustomer.getPhone());
+			existingCustomer.setAddress(updatedCustomer.getAddress());
+			return customerRepository.save(existingCustomer);
+		} else {
+			return null; // Or throw an exception indicating not found
+		}
 	}
 
 
 	// New Code
-
-	@Transactional
 	public Order updateOrderWithRetry(Order updatedOrder) {
 		return executeWithRetry(() -> {
 			// Fetch the existing order
-			Order currentOrder = orderRepository.findById(updatedOrder.getOrderId())
+			Order currentOrder = orderRepository.findById(updatedOrder.getOrderUuid())
 					.orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + updatedOrder.getOrderId()));
 
 			// Update fields
 			// Validate for negative numbers, if that's the case then throw an error
-			if (updatedOrder.getTotalAmount() < 0) {
-				throw new IllegalArgumentException("Invalid order amount");
-			}
+			//if (updatedOrder.getTotalAmount() < 0) {
+			//	throw new IllegalArgumentException("Invalid order amount");
+			//}
+			// Adding a Table Constrain instead:
+			// ALTER TABLE orders
+			// ADD CONSTRAINT chk_order_total_non_negative CHECK (total_amount >= 0);
+
 			currentOrder.setTotalAmount(updatedOrder.getTotalAmount());
 
 			// Save and return
@@ -112,7 +138,8 @@ public class CrmService {
 
 	private boolean isRetryableException(DataAccessException exception) {
 		Throwable cause = exception.getRootCause();
-		return cause != null && cause.getMessage() != null && cause.getMessage().contains("SQLSTATE 40001");
+		return (cause != null && cause.getMessage() != null && cause.getMessage().contains("SQLSTATE 40001")) ||
+				(exception instanceof DataIntegrityViolationException && cause != null && cause.getMessage() != null && cause.getMessage().contains("failed to satisfy CHECK constraint"));
 	}
 
 

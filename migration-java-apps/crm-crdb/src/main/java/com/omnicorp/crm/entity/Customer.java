@@ -7,12 +7,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "customers")
 public class Customer {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "customer_uuid")
+	private UUID customerUuid;
+
 	@Column(name = "customer_id")
 	private Long customerId;
 
@@ -32,6 +37,14 @@ public class Customer {
 	private String address;
 
 	public Customer() {
+	}
+
+	public UUID getCustomerUuid() {
+		return customerUuid;
+	}
+
+	public void setCustomerUuid(UUID customerUuid) {
+		this.customerUuid = customerUuid;
 	}
 
 	// Getters and setters
@@ -86,7 +99,8 @@ public class Customer {
 	@Override
 	public String toString() {
 		return "Customer{" +
-				"customerId=" + customerId +
+				"customerUuid=" + customerUuid +
+				", customerId=" + customerId +
 				", firstName='" + firstName + '\'' +
 				", lastName='" + lastName + '\'' +
 				", email='" + email + '\'' +

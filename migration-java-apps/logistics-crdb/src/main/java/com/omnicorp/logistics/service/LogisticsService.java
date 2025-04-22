@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class LogisticsService {
@@ -29,7 +30,7 @@ public class LogisticsService {
 		return inventoryRepository.findAll();
 	}
 
-	public Inventory getInventoryById(Long id) {
+	public Inventory getInventoryById(UUID id) {
 		return inventoryRepository.findById(id).orElse(null);
 	}
 
@@ -41,7 +42,7 @@ public class LogisticsService {
 		return productRepository.findAll();
 	}
 
-	public Product getProductById(Long id) {
+	public Product getProductById(UUID id) {
 		return productRepository.findById(id).orElse(null);
 	}
 
@@ -53,13 +54,11 @@ public class LogisticsService {
 		return shipmentRepository.findAll();
 	}
 
-	public Shipment getShipmentById(Long id) {
+	public Shipment getShipmentById(UUID id) {
 		return shipmentRepository.findById(id).orElse(null);
 	}
 
 	public Shipment createShipment(Shipment shipment) {
 		return shipmentRepository.save(shipment);
 	}
-
-	// Add more service methods as needed
 }

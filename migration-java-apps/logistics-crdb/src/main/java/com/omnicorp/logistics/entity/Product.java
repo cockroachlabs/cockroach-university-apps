@@ -8,12 +8,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "products")
 public class Product {
 
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name="product_uuid")
+	private UUID productUuid;
+
 	@Column(name = "product_id")
 	private Long productId;
 
@@ -27,6 +33,14 @@ public class Product {
 	private Double price;
 
 	public Product() {
+	}
+
+	public UUID getProductUuid() {
+		return productUuid;
+	}
+
+	public void setProductUuid(UUID productUuid) {
+		this.productUuid = productUuid;
 	}
 
 	// Getters and setters
@@ -65,7 +79,8 @@ public class Product {
 	@Override
 	public String toString() {
 		return "Product{" +
-				"productId=" + productId +
+				"productUuid=" + productUuid +
+				", productId=" + productId +
 				", productName='" + productName + '\'' +
 				", description='" + description + '\'' +
 				", price=" + price +

@@ -9,15 +9,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
 public class Order {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "order_uuid")
+	private UUID orderUuid;
+
 	@Column(name = "order_id")
 	private Long orderId;
+
+	@Column(name = "customer_uuid")
+	private UUID customerUuid;
 
 	@Column(name = "customer_id")
 	private Long customerId;
@@ -29,6 +36,22 @@ public class Order {
 	private Double totalAmount;
 
 	public Order() {
+	}
+
+	public UUID getOrderUuid() {
+		return orderUuid;
+	}
+
+	public void setOrderUuid(UUID orderUuid) {
+		this.orderUuid = orderUuid;
+	}
+
+	public UUID getCustomerUuid() {
+		return customerUuid;
+	}
+
+	public void setCustomerUuid(UUID customerUuid) {
+		this.customerUuid = customerUuid;
 	}
 
 	// Getters and setters
@@ -67,7 +90,9 @@ public class Order {
 	@Override
 	public String toString() {
 		return "Order{" +
-				"orderId=" + orderId +
+				"orderUuid=" + orderUuid +
+				", orderId=" + orderId +
+				", customerUuid=" + customerUuid +
 				", customerId=" + customerId +
 				", orderDate=" + orderDate +
 				", totalAmount=" + totalAmount +

@@ -6,18 +6,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "inventory")
 public class Inventory {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inventory_seq_gen")
-	@SequenceGenerator(name = "inventory_seq_gen", sequenceName = "inventory_inventory_id_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name="inventory_uuid")
+	private UUID inventoryUuid;
+
 	@Column(name = "inventory_id")
 	private Long inventoryId;
+
+	@Column(name = "product_uuid")
+	private UUID productUuid;
 
 	@Column(name = "product_id")
 	private Long productId;
@@ -31,6 +37,14 @@ public class Inventory {
 	public Inventory() {
 	}
 
+	public UUID getInventoryUuid() {
+		return inventoryUuid;
+	}
+
+	public void setInventoryUuid(UUID inventoryUuid) {
+		this.inventoryUuid = inventoryUuid;
+	}
+
 	// Getters and setters
 	public Long getInventoryId() {
 		return inventoryId;
@@ -38,6 +52,14 @@ public class Inventory {
 
 	public void setInventoryId(Long inventoryId) {
 		this.inventoryId = inventoryId;
+	}
+
+	public UUID getProductUuid() {
+		return productUuid;
+	}
+
+	public void setProductUuid(UUID productUuid) {
+		this.productUuid = productUuid;
 	}
 
 	public Long getProductId() {
@@ -67,7 +89,9 @@ public class Inventory {
 	@Override
 	public String toString() {
 		return "Inventory{" +
-				"inventoryId=" + inventoryId +
+				"inventoryUuid=" + inventoryUuid +
+				", inventoryId=" + inventoryId +
+				", productUuid=" + productUuid +
 				", productId=" + productId +
 				", quantity=" + quantity +
 				", location='" + location + '\'' +
