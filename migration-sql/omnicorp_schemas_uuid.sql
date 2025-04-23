@@ -17,7 +17,7 @@ CREATE TABLE orders (
     order_date DATE NULL,
     total_amount DECIMAL(10,2) NULL,
     CONSTRAINT orders_customer_uuid_fkey FOREIGN KEY (customer_uuid) REFERENCES customers(customer_uuid),
-    CONSTRAINT chk_order_total_non_negative CHECK (total_amount >= 0),
+    CONSTRAINT chk_order_total_non_negative CHECK (total_amount >= 0)
 );
 
 CREATE TABLE products (
