@@ -1,0 +1,41 @@
+## CRM > Omnicorp
+molt fetch \
+--source 'mysql://crmuser:crmpwd@localhost:3306/crm' \
+--target 'postgresql://root@localhost:26257/omnicorp?sslmode=disable' \
+--direct-copy \
+--logging=debug \
+--allow-tls-mode-disable \
+--table-filter 'addresses' \
+--table-handling 'drop-on-target-and-recreate'
+
+
+## LOGISTICS > Omnicorp
+molt fetch \
+--source 'postgres://logistics_user:lpwd@localhost:5432/logistics' \
+--target 'postgresql://root@localhost:26257/omnicorp?sslmode=disable' \
+--direct-copy \
+--logging=debug \
+--allow-tls-mode-disable \
+--table-filter 'shipment_addresses' \
+--table-handling 'drop-on-target-and-recreate'
+
+
+## Omnicorp Alter/Copy
+
+-- omnicorp.addresses
+ALTER TABLE omnicorp.addresses
+ADD COLUMN customer_uuid UUID;
+
+UPDATE omnicorp.addresses
+SET customer_uuid = c.customer_uuid
+FROM omnicorp.customers c
+WHERE omnicorp.addresses.customer_id = c.customer_id;
+
+-- omnicorp.shipment_addresses
+ALTER TABLE omnicorp.shipment_addresses
+ADD COLUMN shipment_uuid UUID;
+
+UPDATE omnicorp.shipment_addresses
+SET shipment_uuid = s.shipment_uuid
+FROM omnicorp.shipments s
+WHERE omnicorp.shipment_addresses.shipment_id = s.shipment_id;
