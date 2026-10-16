@@ -55,7 +55,7 @@ terminationGracePeriodSeconds: 30
 autoscaling:
   enabled: true
   minReplicas: 2
-  maxReplicas: 10
+  maxReplicas: 5
   # Default, always-available path: scale on CPU (needs only metrics-server).
   targetCPUUtilizationPercentage: 60
   # Production path taught in the course: scale on a custom request-rate metric.
